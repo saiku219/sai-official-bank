@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>SAI OFFICIAL BANK – Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen text-white">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center p-6 border-b border-slate-700">
+    <h1 class="text-2xl font-bold tracking-wide">🏦 SAI OFFICIAL BANK – Admin Panel</h1>
+    <form method="post" action="/logout">
+      <button class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">Logout</button>
+    </form>
+  </header>
+
+  <!-- Stats -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+    <div class="bg-white/10 backdrop-blur rounded-xl p-5">
+      <p class="text-sm opacity-70">Total Users</p>
+      <h2 id="userCount" class="text-3xl font-bold">0</h2>
+    </div>
+    <div class="bg-white/10 backdrop-blur rounded-xl p-5">
+      <p class="text-sm opacity-70">Total Accounts</p>
+      <h2 id="accountCount" class="text-3xl font-bold">0</h2>
+    </div>
+    <div class="bg-white/10 backdrop-blur rounded-xl p-5">
+      <p class="text-sm opacity-70">Total Transactions</p>
+      <h2 id="txCount" class="text-3xl font-bold">0</h2>
+    </div>
+  </section>
+
+  <!-- Users -->
+  <section class="p-6">
+    <h2 class="text-xl font-semibold mb-4">👥 Users</h2>
+    <div class="overflow-x-auto bg-white/5 rounded-xl">
+      <table class="w-full text-sm">
+        <thead class="bg-white/10">
+          <tr>
+            <th class="p-3">ID</th>
+            <th class="p-3">Username</th>
+            <th class="p-3">Role</th>
+            <th class="p-3">Enabled</th>
+            <th class="p-3">Action</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Transactions -->
+  <section class="p-6">
+    <h2 class="text-xl font-semibold mb-4">💳 Transactions</h2>
+    <div class="overflow-x-auto bg-white/5 rounded-xl">
+      <table class="w-full text-sm">
+        <thead class="bg-white/10">
+          <tr>
+            <th class="p-3">ID</th>
+            <th class="p-3">From</th>
+            <th class="p-3">To</th>
+            <th class="p-3">Amount</th>
+            <th class="p-3">Type</th>
+            <th class="p-3">Date</th>
+          </tr>
+        </thead>
+        <tbody id="txTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+<script>
+  async function loadDashboard() {
+    const users = await axios.get('/admin/users');
+    const txs = await axios.get('/admin/transactions');
+    const accounts = await axios.get('/accounts');
+
+    document.getElementById('userCount').innerText = users.data.length;
+    document.getElementById('txCount').innerText = txs.data.length;
+    document.getElementById('accountCount').innerText = accounts.data.length;
+
+    const usersTable = document.getElementById('usersTable');
+    usersTable.innerHTML = '';
+    users.data.forEach(u => {
+      usersTable.innerHTML += `
+        <tr class="border-b border-slate-700">
+          <td class="p-3">${u.id}</td>
+          <td class="p-3">${u.username}</td>
+          <td class="p-3">${u.role}</td>
+          <td class="p-3">${u.enabled}</td>
+          <td class="p-3">
+            ${u.enabled 
+              ? `<button onclick="lock(${u.id})" class="bg-yellow-500 px-3 py-1 rounded">Lock</button>`
+              : `<button onclick="unlock(${u.id})" class="bg-green-500 px-3 py-1 rounded">Unlock</button>`
+            }
+          </td>
+        </tr>
+      `;
+    });
+
+    const txTable = document.getElementById('txTable');
+    txTable.innerHTML = '';
+    txs.data.forEach(t => {
+      txTable.innerHTML += `
+        <tr class="border-b border-slate-700">
+          <td class="p-3">${t.id}</td>
+          <td class="p-3">${t.fromAccountId}</td>
+          <td class="p-3">${t.toAccountId}</td>
+          <td class="p-3">$${t.amount}</td>
+          <td class="p-3">${t.type}</td>
+          <td class="p-3">${t.createdAt || ''}</td>
+        </tr>
+      `;
+    });
+  }
+
+  function lock(id) {
+    axios.post(`/admin/users/${id}/lock`).then(loadDashboard);
+  }
+
+  function unlock(id) {
+    axios.post(`/admin/users/${id}/unlock`).then(loadDashboard);
+  }
+
+  loadDashboard();
+</script>
+
+</body>
+</html>

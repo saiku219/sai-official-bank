@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SAI OFFICIAL BANK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --blue:#1e90ff; --navy:#0b1d3a; --ink:#0f2a44; --bg:#f4f7fb; --card:#ffffff;
+      --success:#10b981; --error:#ef4444;
+      --shadow: 0 10px 28px rgba(0,0,0,.12);
+      --glow: 0 12px 28px rgba(30,144,255,.45);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif; background:var(--bg); margin:0; color:#0b1220}
+    header{
+      position:sticky; top:0; z-index:5;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      color:#fff; padding:18px 22px; font-weight:800; letter-spacing:.3px;
+      display:flex; align-items:center; justify-content:space-between;
+      box-shadow: 0 10px 30px rgba(30,144,255,.35);
+    }
+    .brand small{display:block; font-weight:500; opacity:.85}
+    .logout{background:linear-gradient(135deg,#ef4444,#b91c1c); border:none; color:#fff; padding:10px 14px; border-radius:999px; cursor:pointer; box-shadow:0 10px 22px rgba(239,68,68,.35)}
+    .logout:hover{transform:translateY(-1px)}
+    nav{display:flex; gap:10px; padding:12px 16px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.06); flex-wrap:wrap}
+    nav button{background:#eaf1ff; color:var(--ink); border:none; padding:10px 14px; border-radius:999px; cursor:pointer}
+    nav button.active, nav button:hover{background:linear-gradient(135deg,var(--blue),#0f62c9); color:#fff; box-shadow:var(--glow)}
+    .container{max-width:1100px; margin:22px auto; padding:0 14px}
+    .card{
+      background:linear-gradient(135deg, rgba(255,255,255,.9), rgba(255,255,255,.85));
+      backdrop-filter: blur(6px);
+      border:1px solid rgba(255,255,255,.6);
+      border-radius:var(--radius); padding:16px; margin-bottom:16px; box-shadow:var(--shadow);
+      transition:transform .15s ease, box-shadow .15s ease
+    }
+    .card:hover{transform:translateY(-3px); box-shadow:0 14px 34px rgba(0,0,0,.16)}
+    h2{display:flex; gap:10px; align-items:center}
+    h2::after{content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--blue),transparent)}
+    .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px}
+    .stat{
+      background:linear-gradient(135deg, rgba(30,144,255,.18), rgba(15,42,68,.08));
+      border:1px solid rgba(255,255,255,.5);
+      border-radius:12px; padding:14px
+    }
+    table{width:100%; border-collapse:collapse}
+    th{background:#f0f4ff; text-align:left; padding:10px}
+    td{padding:10px; border-bottom:1px solid #eef}
+    input, select{
+      width:100%; padding:10px; border-radius:10px; border:1px solid #dbe3ff; margin:6px 0 12px;
+      transition: box-shadow .15s ease, border .15s ease
+    }
+    input:focus, select:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(30,144,255,.15)}
+    .primary{
+      background:linear-gradient(135deg,var(--blue),#0f62c9); color:#fff; border:none; padding:10px 14px; border-radius:999px; cursor:pointer;
+      box-shadow:var(--glow); transition:all .15s ease
+    }
+    .primary:hover{transform:translateY(-1px)}
+    .toast{position:fixed; right:16px; bottom:16px; padding:12px 14px; border-radius:12px; color:#fff; box-shadow:var(--shadow); opacity:0; transform:translateY(8px); transition:.2s}
+    .toast.show{opacity:1; transform:none}
+    .toast.success{background:linear-gradient(135deg,#10b981,#047857)}
+    .toast.error{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+    footer{opacity:.7; text-align:center; padding:18px}
+    .tab{display:none}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <i class="fa-solid fa-building-columns"></i> SAI OFFICIAL BANK
+    <small>Secure • Simple • Smart Banking</small>
+  </div>
+  <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<nav>
+  <button data-tab="dashboard" class="active" onclick="showTab('dashboard', this)">Dashboard</button>
+  <button data-tab="accounts" onclick="showTab('accounts', this)">Accounts</button>
+  <button data-tab="transfer" onclick="showTab('transfer', this)">Transfer</button>
+  <button data-tab="transactions" onclick="showTab('transactions', this)">Transactions</button>
+</nav>
+
+<div class="container">
+  <div id="dashboard" class="tab" style="display:block">
+    <div class="card">
+      <h2>📊 Dashboard</h2>
+      <div class="stats">
+        <div class="stat">Total Accounts: <b id="totalAccounts">0</b></div>
+        <div class="stat">Total Balance: <b id="totalBalance">$0</b></div>
+      </div>
+      <canvas id="balanceChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <div id="accounts" class="tab">
+    <div class="card">
+      <h2>🧾 Accounts</h2>
+      <table>
+        <thead><tr><th>ID</th><th>Owner</th><th>Type</th><th>Balance</th></tr></thead>
+        <tbody id="accountsTable"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>➕ Create Account</h2>
+      <input id="ownerName" placeholder="Owner Name"/>
+      <select id="type"><option>SAVINGS</option><option>CHECKING</option></select>
+      <input id="balance" type="number" placeholder="Initial Balance"/>
+      <button class="primary" onclick="createAccount()">Create</button>
+    </div>
+  </div>
+
+  <div id="transfer" class="tab">
+    <div class="card">
+      <h2>💸 Transfer Money</h2>
+      <input id="fromId" placeholder="From Account ID"/>
+      <input id="toId" placeholder="To Account ID"/>
+      <input id="amount" placeholder="Amount"/>
+      <button class="primary" onclick="transfer()">Transfer</button>
+    </div>
+  </div>
+
+  <div id="transactions" class="tab">
+    <div class="card">
+      <h2>📜 Transaction History</h2>
+      <table>
+        <thead><tr><th>ID</th><th>From</th><th>To</th><th>Amount</th><th>Type</th><th>Date</th></tr></thead>
+        <tbody id="txTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<footer>© 2026 SAI OFFICIAL BANK • Built with Spring Boot & ❤️</footer>
+
+<script>
+const baseUrl="/accounts"; let chart;
+const toast=(msg, ok=true)=>{const t=document.getElementById('toast'); t.className='toast '+(ok?'success':'error'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200);}
+function showTab(tab, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.style.display='none');
+  document.getElementById(tab).style.display='block';
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(tab==='dashboard') refreshDashboard();
+  if(tab==='accounts') loadAccounts();
+  if(tab==='transactions') loadTransactions();
+}
+function logout(){ fetch('/logout',{method:'POST'}).then(()=>location.href='/login'); }
+function loadAccounts(){ fetch(baseUrl).then(r=>r.json()).then(d=>{ const tb=document.getElementById('accountsTable'); tb.innerHTML=''; d.forEach(a=>tb.innerHTML+=`<tr><td>${a.id}</td><td>${a.ownerName}</td><td>${a.type}</td><td>$${a.balance}</td></tr>`); }); }
+function refreshDashboard(){ fetch(baseUrl).then(r=>r.json()).then(d=>{ totalAccounts.textContent=d.length; const sum=d.reduce((s,a)=>s+Number(a.balance||0),0); totalBalance.textContent='$'+sum.toFixed(2); renderChart(d); }); }
+function renderChart(d){ const labels=d.map(a=>a.ownerName), vals=d.map(a=>Number(a.balance)); const ctx=document.getElementById('balanceChart'); if(chart) chart.destroy(); chart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Balance',data:vals}]}}); }
+function createAccount(){
+  fetch(baseUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ownerName:ownerName.value,type:type.value,initialBalance:balance.value})})
+  .then(async r=>{const j=await r.json(); if(!r.ok) throw new Error(j.error||'Failed'); toast('Account created #'+j.id,true); loadAccounts();})
+  .catch(e=>toast(e.message,false));
+}
+function transfer(){
+  fetch(baseUrl+'/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fromAccountId:fromId.value,toAccountId:toId.value,amount:amount.value})})
+  .then(async r=>{const j=await r.json(); if(!r.ok) throw new Error(j.error||'Transfer failed'); toast('Transfer successful!',true); refreshDashboard();})
+  .catch(e=>toast(e.message,false));
+}
+function loadTransactions(){
+  fetch('/transactions').then(r=>r.json()).then(d=>{ const tb=document.getElementById('txTable'); tb.innerHTML=''; d.forEach(t=>tb.innerHTML+=`<tr><td>${t.id}</td><td>${t.fromAccountId||'-'}</td><td>${t.toAccountId||'-'}</td><td>$${t.amount}</td><td>${t.type||'TRANSFER'}</td><td>${t.createdAt||''}</td></tr>`); });
+}
+refreshDashboard();
+</script>
+</body>
+</html>
