@@ -17,10 +17,8 @@ public class Transaction {
     private String type; // DEPOSIT, WITHDRAW, TRANSFER
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // ✅ Required by JPA
     public Transaction() {}
 
-    // ✅ Add this constructor (THIS fixes your error)
     public Transaction(Long fromAccountId, Long toAccountId, BigDecimal amount, String type) {
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
@@ -35,4 +33,10 @@ public class Transaction {
     public BigDecimal getAmount() { return amount; }
     public String getType() { return type; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    // ✅ Add these setters (THIS fixes your error)
+    public void setFromAccountId(Long fromAccountId) { this.fromAccountId = fromAccountId; }
+    public void setToAccountId(Long toAccountId) { this.toAccountId = toAccountId; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public void setType(String type) { this.type = type; }
 }
