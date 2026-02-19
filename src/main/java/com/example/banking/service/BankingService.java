@@ -7,58 +7,52 @@ import com.example.banking.model.Transaction;
 import com.example.banking.repository.AccountRepository;
 import com.example.banking.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 public class BankingService {
 
-    private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
+    private final AccountRepository accountRepo;
+    private final TransactionRepository txnRepo;
 
-    public BankingService(AccountRepository accountRepository,
-                          TransactionRepository transactionRepository) {
-        this.accountRepository = accountRepository;
-        this.transactionRepository = transactionRepository;
+    public BankingService(AccountRepository accountRepo, TransactionRepository txnRepo) {
+        this.accountRepo = accountRepo;
+        this.txnRepo = txnRepo;
     }
 
-    // ✅ FIX: This method was missing (caused your error)
-    public List<Account> getAllAccounts() {
-        return accountRepository.findAll();
+    public Account createAccount(CreateAccountRequest req) {
+        Account acc = new Account();
+        acc.setOwnerName(req.getOwnerName());
+        acc.setType(req.getType());
+        acc.setBalance(req.getInitialBalance() == null ? BigDecimal.ZERO : req.getInitialBalance());
+        return accountRepo.save(acc);
     }
 
-    // ✅ Create new account
-    public Account createAccount(CreateAccountRequest request) {
-        Account account = new Account();
-        account.setOwnerName(request.ownerName);
-        account.setType(request.type);
-        account.setBalance(request.initialBalance);
-        return accountRepository.save(account);
+    public void transfer(TransferRequest req) {
+        withdraw(req.getFromAccountId(), req.getAmount());
+        deposit(req.getToAccountId(), req.getAmount());
+        txnRepo.save(new Transaction(req.getFromAccountId(), req.getToAccountId(), req.getAmount(), "TRANSFER"));
     }
 
-    // ✅ Transfer money + save transaction
-    @Transactional
-    public void transfer(TransferRequest request) {
-        Account from = accountRepository.findById(request.fromAccountId)
-                .orElseThrow(() -> new RuntimeException("From account not found"));
+    public Account deposit(Long id, BigDecimal amount) {
+        Account acc = accountRepo.findById(id).orElseThrow();
+        acc.setBalance(acc.getBalance().add(amount));
+        txnRepo.save(new Transaction(null, id, amount, "DEPOSIT"));
+        return accountRepo.save(acc);
+    }
 
-        Account to = accountRepository.findById(request.toAccountId)
-                .orElseThrow(() -> new RuntimeException("To account not found"));
-
-        if (from.getBalance().compareTo(request.amount) < 0) {
+    public Account withdraw(Long id, BigDecimal amount) {
+        Account acc = accountRepo.findById(id).orElseThrow();
+        if (acc.getBalance().compareTo(amount) < 0) {
             throw new RuntimeException("Insufficient balance");
         }
-
-        from.setBalance(from.getBalance().subtract(request.amount));
-        to.setBalance(to.getBalance().add(request.amount));
-
-        Transaction tx = new Transaction();
-        tx.setFromAccountId(request.fromAccountId);
-        tx.setToAccountId(request.toAccountId);
-        tx.setAmount(request.amount);
-        tx.setType("TRANSFER");
-
-        transactionRepository.save(tx);
+        acc.setBalance(acc.getBalance().subtract(amount));
+        txnRepo.save(new Transaction(id, null, amount, "WITHDRAW"));
+        return accountRepo.save(acc);
+    }
+    public List<Transaction> getTransactionsForAccount(Long accountId) {
+        return txnRepo.findByFromAccountIdOrToAccountId(accountId, accountId);
     }
 }

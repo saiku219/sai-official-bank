@@ -5,12 +5,14 @@ import com.example.banking.dto.TransferRequest;
 import com.example.banking.model.Account;
 import com.example.banking.model.Transaction;
 import com.example.banking.service.BankingService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/api")
 public class BankingController {
 
     private final BankingService bankingService;
@@ -19,35 +21,29 @@ public class BankingController {
         this.bankingService = bankingService;
     }
 
-    // ✅ Create new bank account
-    @PostMapping
-    public Account createAccount(@RequestBody CreateAccountRequest request) {
-        return bankingService.createAccount(
-                request.getOwnerName(),
-                request.getType(),
-                request.getInitialBalance()
-        );
+    @PostMapping("/accounts")
+    public Account create(@Valid @RequestBody CreateAccountRequest req) {
+        return bankingService.createAccount(req);
     }
 
-    // ✅ Get all accounts
-    @GetMapping
-    public List<Account> getAllAccounts() {
-        return bankingService.getAllAccounts();
+    @PostMapping("/accounts/{id}/deposit")
+    public Account deposit(@PathVariable Long id, @RequestParam BigDecimal amount) {
+        return bankingService.deposit(id, amount);
     }
 
-    // ✅ Transfer money
-    @PostMapping("/transfer")
-    public Transaction transfer(@RequestBody TransferRequest request) {
-        return bankingService.transfer(
-                request.getFromAccountId(),
-                request.getToAccountId(),
-                request.getAmount()
-        );
+    @PostMapping("/accounts/{id}/withdraw")
+    public Account withdraw(@PathVariable Long id, @RequestParam BigDecimal amount) {
+        return bankingService.withdraw(id, amount);
     }
 
-    // ✅ Get transaction history for one account
-    @GetMapping("/{accountId}/transactions")
-    public List<Transaction> getTransactions(@PathVariable Long accountId) {
-        return bankingService.getTransactionsForAccount(accountId);
+    @PostMapping("/accounts/transfer")
+    public String transfer(@RequestBody TransferRequest req) {
+        bankingService.transfer(req);
+        return "Transfer successful";
+    }
+
+    @GetMapping("/accounts/{id}/transactions")
+    public List<Transaction> history(@PathVariable Long id) {
+        return bankingService.getTransactionsForAccount(id);
     }
 }
