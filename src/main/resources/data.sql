@@ -11,7 +11,8 @@ INSERT INTO account (owner_name, type, balance) VALUES ('Hannah Lee', 'CHECKING'
 INSERT INTO account (owner_name, type, balance) VALUES ('Ivan Petrov', 'SAVINGS', 999.99);
 INSERT INTO account (owner_name, type, balance) VALUES ('Julia Brown', 'CHECKING', 50.00);
 
-
+INSERT INTO account (owner_name, type, balance) VALUES ('Sai', 'SAVINGS', 1000.00);
+INSERT INTO account (owner_name, type, balance) VALUES ('Kumar', 'CURRENT', 500.00);
 
 
 

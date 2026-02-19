@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS account (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    owner_name VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    balance DECIMAL(19,2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS transaction (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    from_account_id BIGINT,
+    to_account_id BIGINT,
+    amount DECIMAL(19,2) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
