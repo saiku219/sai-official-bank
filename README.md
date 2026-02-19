@@ -1,3 +1,5 @@
+![CI](https://img.shields.io/badge/build-passing-brightgreen)
+
 # 🏦 Sai Official Bank – Full-Stack Banking Application (Spring Boot)
 
 A production-style **banking system** built with **Java 21 + Spring Boot** featuring secure authentication, role-based access, account management, transactions, and an admin dashboard. Designed as a **portfolio project** to demonstrate real-world backend engineering practices.
