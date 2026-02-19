@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/saiku219/banking-system.git'
+                 git branch: 'main', credentialsId: 'github-token', url: 'https://github.com/saiku219/sai-official-bank.git'
             }
         }
 
